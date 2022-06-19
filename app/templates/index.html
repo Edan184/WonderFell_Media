@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<body>
+    <h1>Welcome to the main page, <span style="color: blue">{{ name }}</span>!</h1>
+    <h4>This is a work in progress, please let me know if you can see this in the least destructive way possible. 
+        I'm simply seeking a means to host a website of my own volition. :)</h4>
+    <h4>{{ bio }}</h4>
+    {% for post in posts %}
+    <div style="color: blue"><p> {{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
+</body>
+{% endfor %}
+{% endblock %}

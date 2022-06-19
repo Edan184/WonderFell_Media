@@ -1,0 +1,47 @@
+<div class="card" style="width: 18rem; padding-left: 20px; padding-right: 20px; border: darkgray; border-width: 3px;">
+    <img style="max-width: 286px; max-height: 180px;" class="card-img-top" src="static/moon cropped.png" alt="Card image cap">
+    <div class="card-body">
+      <h5 class="card-title">Change Credentials</h5>
+      <p class="card-text">If you would like to change your profile information, press button below.</p>
+      <h6 style="color: red;">{{ error }}</h6>
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+        Edit Profile Info
+      </button>
+      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Profile Info</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body" style="margin: auto;">
+              <form method="POST" class="container-fluid">
+                <h4>Input characters into any of the fields to update your profile information. Invalid characters include: \, %, ", '</h4>
+                <input name="first_name" placeholder="First Name" style="text-align: center">
+                <h6></h6>
+                <input name="last_name" placeholder="Last Name" style="text-align: center">
+                <h6></h6>
+                <input name="email" placeholder="Email" style="text-align: center">
+                <h6></h6>
+                <select placeholder="sex" name="sex" style="text-align: center">
+                  <option value=""></option>  
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Rather Not Say">Rather Not Say</option>
+                </select> Sex
+                <h6></h6>
+                <input name="bio" placeholder="Bio" style="text-align: center;">
+                <h6></h6>
+            <div class="footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" style="margin-right: auto;">Close</button>
+              <button type="submit" class="btn btn-primary" style="margin-right: auto;">Save Changes</button>
+            </div>
+            </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
