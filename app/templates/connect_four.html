@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+<html>
+  <head>
+    {% block styles %}
+    <link rel="stylesheet" href="{{url_for('.static', filename='css/connect_four.css')}}">
+    {{ super() }}
+    {% endblock %}
+    {% block scripts %}
+    <script src="{{url_for('.static', filename='js/connect_four.js')}}"></script>
+    {{ super() }}
+    {% endblock %}
+  </head>
+  {% block content %}
+  <body-game>
+    <form class="selectorBlockTop">
+      <button type="button" onclick="matchMakeGraphic()" style="width:25vh; height: 3vh;" id="Matchmake">Matchmake</button>
+    </form>
+
+    <div class="row">
+    
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      
+    </div>
+
+    <div class="row">
+    
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      
+    </div>
+
+    <div class="row">
+    
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      
+    </div>
+
+    <div class="row">
+    
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      
+    </div>
+
+    <div class="row">
+    
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      
+    </div>
+
+    <div class="row">
+    
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      <div class="piece">
+      </div>
+      
+    </div>
+
+    <form class="selectorBlockBottom">
+      <button type="button" id="Regular Mode" onclick='changeMode(1); overlayOn(0);'>Regular Mode</button>
+      <h4 id=output style="color: white; width: fit-content; padding: 4px;">Regular Mode</h4>
+      <button type="button" id="0G Mode" onclick='changeMode(0); overlayOn(0);'>0G Mode</button>
+    </form>
+    <div id="overlayReset" onclick="overlayOff()">
+      <h-2 id="resetText" style="color: white;">Game Reset.</h-2>
+    </div>
+    <div id="overlayWin" onclick="overlayOff()">
+      <h-2 id="winText"></h-2>
+    </div>
+  </body-game>
+  {% endblock %}
+</html>

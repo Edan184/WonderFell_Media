@@ -1,4 +1,0 @@
-- CD into project folder
-- Engage virtual environment by typing ". venv/bin/activate" in linux-based terminal
-- Once in venv, type "export FLASK_APP={}" where {} is folder name where root application is stored
-- type "export FLASK_ENV=development" to create development environment

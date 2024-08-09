@@ -1,6 +1,6 @@
 import sys
 
-sys.path.insert(0, "/var/www/html/Wonderfell")
+sys.path.insert(0, "/var/www/wonderfell")
 
 from wonderfell import app
 

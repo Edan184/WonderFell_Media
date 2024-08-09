@@ -25,11 +25,10 @@ body {
     margin-right:auto;
     text-align:center
 }
-.progress {
-    -webkit-appearance:none;
+.progress-bar {
     width: 50%;
-    height: 15px;
-    border: 1px solid #ccc;
+    height: 100px;
+    border: 10px solid #ccc;
     color: #aaa;
     border-radius: 15px;
     text-align: center;

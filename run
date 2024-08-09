@@ -5,4 +5,4 @@ export FLASK_ENV=development
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
-flask run --port=20205
+flask run --port=8080

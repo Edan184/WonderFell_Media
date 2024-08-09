@@ -1,10 +1,10 @@
-from app import app, bootstrap, profconn, musiconn, db, credentials
-import json, html, bcrypt, uuid, math, os, socket
+from app import app, bootstrap, profconn, musicconn, db, credentials
+import json, html, bcrypt, uuid, math, os, socket, asyncio, websockets
 from flask import render_template, request, session, redirect, url_for, flash
 from flask_paginate import Pagination, get_page_args, get_page_parameter
 from werkzeug.datastructures import ImmutableMultiDict
 
-with open(os.path.expanduser("/short/Keys/Keys/Wonderfell/Salt")) as file:
+with open(os.path.expanduser("/short/keys/Wonderfell/Salt")) as file:
     temp_key = file.read().replace('\n', '')
     
 app.secret_key = bytes(temp_key, "utf-8")
@@ -13,7 +13,7 @@ salt = bcrypt.gensalt()
 def ip_query():
 # Returns Local IP Address
 
-    return credentials("wonderfell_database")['ip']
+    return credentials("wonderfell_database")["ip"]
 
 def log_the_user_in(username_inp, password_inp):
 # Handler for credentials
@@ -25,12 +25,15 @@ def log_the_user_in(username_inp, password_inp):
         payload_prime = user_check(username_inp, password_inp)
         payload = payload_prime[0][0]
         sid = uuid.uuid4()
+
         update_query = "UPDATE client_user SET sid = '{0}' WHERE user = '{1}';".format(sid, username_inp)
 
         cursor = profconn.cursor()
         cursor.execute(update_query)
         cursor.execute("commit;")
         cursor.close()
+        profconn.close()
+        profconn.ping()
 
         if payload_prime[2] == True:
             # If username and password match, 
@@ -55,7 +58,7 @@ def log_the_user_in(username_inp, password_inp):
             return True
 
     except Exception as e:
-        print(e)
+        print("Log_the_user_in failed, error:", e)
         return True
         # Apply True state to failed boolean and return to login() function to set
 
@@ -71,15 +74,18 @@ def user_check(username_inp, password_inp):
         cursor.execute(query)
         logged = cursor.fetchall()
         cursor.close()
+        profconn.ping()
 
 # User exists (T/F)
         cursor = profconn.cursor()
         cursor.execute(query2)
         existing = cursor.fetchall()
         cursor.close()
+        profconn.close()
+        profconn.ping()
 
         if (existing == ()) == True:
-            print("Failing user_check()")
+            print("User doesn't exist, failing user_check()")
             logged = [""]
             existing = [[""]]
             phash = False
@@ -90,7 +96,7 @@ def user_check(username_inp, password_inp):
 
     except Exception as error:
         # TODO: Make more appropriate exit
-        print(error)
+        print("User_check failed, error:", error)
         return redirect(url_for("login"))
 
 def session_info():
@@ -101,6 +107,8 @@ def session_info():
         cursor.execute(query)
         logged = cursor.fetchall()
         cursor.close()
+        profconn.close()
+        profconn.ping()
 
         if (logged == ()) == True:
             print("Failing session_check()")
@@ -109,19 +117,22 @@ def session_info():
         user_log = [logged]
         return user_log
 
-    except Exception as error:
+    except Exception as e:
         # TODO: Make more appropriate exit
-        print(error)
+        print("Session_info failed, error:", e)
         return False
 
 
 def total_recs():
 
     query = """SELECT * FROM music ORDER BY artist ASC;"""
-    cursor = musiconn.cursor()
+    cursor = musicconn.cursor()
     cursor.execute(query)
     payload = cursor.fetchall()
     cursor.close()
+    musicconn.close()
+    musicconn.ping()
+
     return payload
 
 def query_mysql(search_inp, page_inp):
@@ -131,31 +142,35 @@ def query_mysql(search_inp, page_inp):
     for i in search_inp:
         query = """SELECT * FROM music WHERE (id LIKE '%{0}%' OR artist LIKE '%{0}%' OR title LIKE '%{0}%' OR album LIKE '%{0}%' OR length LIKE '%{0}%' OR genre LIKE '%{0}%' OR bitrate LIKE '%{0}%' OR filename LIKE '%{0}%');""".format(i)
         query2 = """SELECT * FROM music WHERE (id LIKE '%{0}%' OR artist LIKE '%{0}%' OR title LIKE '%{0}%' OR album LIKE '%{0}%' OR length LIKE '%{0}%' OR genre LIKE '%{0}%' OR bitrate LIKE '%{0}%' OR filename LIKE '%{0}%') ORDER BY artist ASC LIMIT {1} OFFSET {2};""".format(i, 250, page_inp)
-        print(i)
+        # print(i)
 
         if page_inp != None:
-            cursor = musiconn.cursor()
+            cursor = musicconn.cursor()
             cursor.execute(query2)
             for i in cursor.fetchall():
                 payload[i[0]] = i
             cursor.close()
+            musicconn.close()
+            musicconn.ping()
             return payload        
         else:
-            cursor = musiconn.cursor()
+            cursor = musicconn.cursor()
             cursor.execute(query)
             for i in cursor.fetchall():
                 payload[i[0]] = i
             cursor.close()
+            musicconn.close()
             return payload
 
 def query_mysql2(per_page, offset):
 # To controll the offset of entries for searched queries
 
     query = '''SELECT * FROM music ORDER BY artist ASC LIMIT {0} OFFSET {1};'''.format(per_page, offset)
-    cursor = musiconn.cursor()
+    cursor = musicconn.cursor()
     cursor.execute(query)
     payload = cursor.fetchall()
     cursor.close()
+    musicconn.close()
     return payload
 
 def refresh_user(username_inp, password_inp):
@@ -172,13 +187,17 @@ def refresh_user(username_inp, password_inp):
             cursor.execute(query)
             hashed_pass = cursor.fetchall()[0][0]
             cursor.close()
-            
+            profconn.close()
+            profconn.ping()
+
             payload = user_check(username_inp, password_inp)[0][0]
             sid = uuid.uuid4()
 
             cursor = profconn.cursor()
             cursor.execute("""UPDATE client_user SET sid = '{0}' WHERE user = '{1}';""".format(sid, username_inp))
             cursor.close()
+            profconn.close()
+            profconn.ping()
 
             hash_check = bcrypt.checkpw(password_inp.encode(), hashed_pass.encode())
             if hash_check == True:
@@ -198,7 +217,7 @@ def refresh_user(username_inp, password_inp):
                 session['username'] != None
 
         except Exception as e:
-            print(e)
+            print("Error:" + e)
             return False
             # Apply True state to failed boolean and return to login() function to set
     else:
@@ -240,7 +259,8 @@ def change_user_info(payload):
         cursor.execute(query)
         cursor.execute("commit;")
         cursor.close()
-
+        profconn.close()
+        profconn.ping()
         refresh_user(payload_new[1], payload['password'])
         
         error = ""
@@ -323,7 +343,6 @@ def json_get2(page):
         page_input = 0
         per_page = 250
         payload = session_info()[0][0]
-        print(session)
 
         if request.method == 'POST':
             imd = request.form
@@ -334,7 +353,6 @@ def json_get2(page):
         try:
             if request.method == 'POST' and int(eimd['page_input'][0]) > 0:  
                 page = int(request.form['page_input'])
-                print(page)
                 content = query_mysql2(per_page, (page - 1) * per_page)
 
                 for i in total_recs():
@@ -358,7 +376,7 @@ def json_get2(page):
                 user = payload[1], name = payload[2], lastname = payload[3], content = content, page=page, count=count, total=total)
 
         except Exception as e:
-            print("failed", e)
+            print("Music_database_v2 failed, error:", e)
             pass
 
 # If searching for track
@@ -370,11 +388,7 @@ def json_get2(page):
                 search_bar = sanitize_input(eimd['search_bar'])
                 content = query_mysql(search_bar, None)
                 filter_term = [search_bar]
-                print("prior")
                 session['filter'].append(filter_term)
-                print(session['filter'])
-
-                print(session)
 
                 for k, v in content.items():
                     if v != ():
@@ -397,7 +411,6 @@ def json_get2(page):
                 rev_multi = {}
                 search_bar = str(sanitize_input(eimd['search_bar']))
                 filter_term = [search_bar]
-                print(filter_term)
                 content = query_mysql(search_bar, eimd['page_input'])
 
                 for k, v in content.items():
@@ -428,7 +441,7 @@ def json_get2(page):
                 user = payload[1], name = payload[2], lastname = payload[3], content = content, page=page, count=count, total=total)
 
         except Exception as e:
-            print("failed", e)
+            print("Music_database_v2 failed, outer error, error:", e)
             return redirect(url_for("index"))
         
     else:
@@ -504,23 +517,18 @@ def json_get3(search_boxpage):
                 user = payload[1], name = payload[2], lastname = payload[3], content = content, page=page, count=count, total=total)
 
         except Exception as e:
-            print("failed", e)
+            print("Music_database_v2 results failed, error:", e)
             return redirect(url_for("index"))
 
     else:
         return redirect(url_for('login'))
 
-@app.route('/test', methods=['GET'])
-def test_temp():
-# TODO: Create forum page
-
-    if session_info is not False: 
-        # Checks for session cookie, if not present, redirects to login   
-
-        json_payload = json.dumps(session["username"], indent=4)
+@app.route('/connect_four', methods=['GET'])
+def connect_four():
+    if session_info() is not False:
+        # Checks for session cookie, if not present, redirects to login
         payload = session_info()[0][0]
-
-        return render_template('test.html', ip=ip_query(), title='Test Page', id = payload[0], user = payload[1], name = payload[2], lastname = payload[3], sex = payload[4], email = payload[5], bio = payload[6], jspy = json_payload)
+        return render_template('connect_four.html', title='Connect Four!', ip=ip_query(), user=payload[1], name=payload[2])
     else:
         return redirect(url_for('login'))
 
@@ -667,6 +675,8 @@ def sign_up():
                     cursor.execute(query)
                     cursor.execute("commit;")
                     cursor.close()
+                    profconn.close()
+                    profconn.ping()
 
                     log_the_user_in(username, creds[username][0])
 
@@ -681,7 +691,7 @@ def sign_up():
                 return render_template("sign_up.html", ip=ip_query(), error=error)
 
         except Exception as e:
-            print(e)
+            print("Sign_up failed, error", e)
             error = "Please report this problem to admin: " + str(e)  
             return render_template('sign_up.html', ip=ip_query(), title='Failed Login', error=error)
     else:
